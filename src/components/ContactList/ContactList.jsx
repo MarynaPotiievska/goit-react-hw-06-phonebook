@@ -1,5 +1,6 @@
-import PropTypes from 'prop-types';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteContact, getContacts } from 'redux/contactsSlice';
+import { getFilter } from 'redux/filterSlice';
 import {
   Contact,
   ContactName,
@@ -8,16 +9,36 @@ import {
   List,
 } from './ContactList.styled';
 
-const ContactList = ({ contacts, onDelete }) => {
+const ContactList = () => {
+  const contacts = useSelector(getContacts);
+  const filter = useSelector(getFilter);
+  const dispatch = useDispatch();
+
+  const hendleDelete = e => {
+    const deletedElId = e.target.parentElement.getAttribute('id');
+    dispatch(deleteContact(deletedElId));
+  };
+
+  const filteredContacts = () => {
+    if (filter !== '') {
+      const filteredArr = contacts.filter(({ name }) =>
+        name.toLowerCase().includes(filter)
+      );
+      return filteredArr;
+    } else {
+      return contacts;
+    }
+  };
+
   return (
     <List>
-      {contacts.map(contact => {
-        const { id, name, number } = contact;
+      {filteredContacts().map(contact => {
+        const { id, name, phone } = contact;
         return (
           <Contact key={id} id={id}>
             <ContactName>{name}</ContactName>
-            <ContactNumber>{number}</ContactNumber>
-            <DeleteButton type="button" onClick={onDelete}>
+            <ContactNumber>{phone}</ContactNumber>
+            <DeleteButton type="button" onClick={hendleDelete}>
               Delete
             </DeleteButton>
           </Contact>
@@ -25,17 +46,6 @@ const ContactList = ({ contacts, onDelete }) => {
       })}
     </List>
   );
-};
-
-ContactList.propTypes = {
-  contacts: PropTypes.arrayOf(
-    PropTypes.exact({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      number: PropTypes.string.isRequired,
-    })
-  ),
-  onDelete: PropTypes.func.isRequired,
 };
 
 export default ContactList;

@@ -1,7 +1,10 @@
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
+// import PropTypes from 'prop-types';
 import { Formik, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import 'yup-phone';
+
+import { addContact, getContacts } from 'redux/contactsSlice';
 
 import Error from '../ErrorMessage/ErrorMessage';
 
@@ -17,9 +20,20 @@ const contactSchema = yup.object().shape({
   number: yup.string().phone('UA').required(),
 });
 
-const ContactForm = ({ onSubmit }) => {
+const ContactForm = () => {
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
+
   const handleSubmit = (values, { resetForm }) => {
-    onSubmit(values);
+    const isInContacts = contacts.find(
+      contact => contact.name.toLowerCase() === values.name.toLowerCase()
+    );
+    if (isInContacts === undefined) {
+      dispatch(addContact(values));
+    } else {
+      alert(`${values.name} is already in contacts.`);
+    }
+
     resetForm();
   };
 
@@ -63,8 +77,8 @@ const ContactForm = ({ onSubmit }) => {
   );
 };
 
-ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
+// ContactForm.propTypes = {
+//   onSubmit: PropTypes.func.isRequired,
+// };
 
 export default ContactForm;
